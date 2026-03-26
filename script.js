@@ -22,7 +22,6 @@ function Gameboard() {
 
     const printBoard = () => {
         const boardWithCellValues = board.map((row) => row.map((cell) => cell.getValue()));
-        console.log(boardWithCellValues);
         return boardWithCellValues;
     }
     return {getBoard, chooseCell, printBoard};
@@ -62,26 +61,17 @@ function DisplayController(playerOneName = "Player One", playerTwoName = "Player
 
     const getActivePlayer = () => activePlayer;
 
-    const turn = document.querySelector(".turns");
-    const choices = document.querySelector(".choices");
-    const printTurn = document.createElement("p");
-    const printChoice = document.createElement("p");
-    turn.appendChild(printTurn);
-    choices.appendChild(printChoice);
-
     const printNewRound = () => {
         board.printBoard();
-        printTurn.textContent = `${getActivePlayer().name}'s turn.`;
     }
 
-    const playRound = (row, column) => {
+    let finishGame;
 
-        printChoice.textContent = `Placing ${getActivePlayer().name}'s token on row ${row} and column ${column}.`;
+    const playRound = (row, column) => {
         board.chooseCell(row, column, getActivePlayer().token);
 
-        const finishGame = checkWin(row,column);
+        finishGame = checkWin(row,column);
         if (finishGame === true) {
-            console.log("The game has finished.")
             return;
         }
 
@@ -96,7 +86,6 @@ function DisplayController(playerOneName = "Player One", playerTwoName = "Player
                 || boardWithCellValues[0][column] === theToken && boardWithCellValues[1][column] === theToken && boardWithCellValues[2][column] === theToken
                 || boardWithCellValues[0][0] === theToken && boardWithCellValues[1][1] === theToken && boardWithCellValues[2][2] === theToken
                 || boardWithCellValues[0][2] === theToken && boardWithCellValues[1][1] === theToken && boardWithCellValues[2][0] === theToken) {
-                    printChoice.textContent = `${getActivePlayer().name} has won the game.`;
                     return true;
                 }
             let sum = 0;
@@ -104,12 +93,16 @@ function DisplayController(playerOneName = "Player One", playerTwoName = "Player
                 for (j = 0; j < 3; j++) {
                     sum += boardWithCellValues[i][j];
                     if (sum >= 13) {
-                        printChoice.textContent = "It´s a tie";
-                        return true;
+                        return "tie";
                     }
                 }
             }
         }
+
+    if (finishGame === true) {
+        console.log("The game has finished.")
+        return;
+    }
 
     printNewRound();
 
@@ -118,33 +111,124 @@ function DisplayController(playerOneName = "Player One", playerTwoName = "Player
 
 function ScreenControler() {
     const cells = document.querySelectorAll(".cell");
-    const choice = document.querySelector(".choices")
-    const turn = document.querySelector(".turns")
-    const printChoice = document.createElement("p")
+    const choice = document.querySelector(".choices");
+    const turn = document.querySelector(".turns");
+    const printTurn = document.createElement("p");
+    turn.appendChild(printTurn);
+    const printChoice = document.createElement("p");
     choice.appendChild(printChoice);
-    const game = DisplayController("One", "Two");
+    const newGameButton = document.querySelector(".newGame");
+    const dialog = document.querySelector("dialog");
+    const submit = document.querySelector(".submit");
+    const playerOne = document.querySelector("#player_one");
+    const playerTwo = document.querySelector("#player_two");
+    let endGame;
+
+    let cross;
+    let circle;
+    const crosses = [];
+    const circles = [];
 
     cells.forEach((cell) => {
         const cellChoice = document.createElement("p");
+        cellChoice.classList = "cellChoice";
+        cellChoice.dataset.id = cell.id;
         cell.appendChild(cellChoice);
-        cell.addEventListener("click", function choose() {
-            const cellArray = cell.id.split(",");
-            const cellRow = cellArray[0];
-            const cellColumn = cellArray[1]
-            if (game.checkWin(cellRow,cellColumn)){
-                const newGameButton = document.createElement("button");
-                turn.appendChild(newGameButton);
-            } else if (cellChoice.textContent === "") {
-                cellChoice.textContent = game.getActivePlayer().token
-                game.playRound(cellRow,cellColumn)
-                
-            } else {
-                printChoice.textContent = "This cell is not available."
-            }
-        })
     })
+
+    newGameButton.addEventListener("click", () => newGame());
+    
+    let game;
+    let isPressed = false;
+    const newGame = () => {
+        dialog.showModal();
+        if (!isPressed){
+            makeItWork();
+            isPressed = true;
+        }
+    }
+
+    submit.addEventListener("click", (event) => {
+        event.preventDefault();
+        const cellChoice = document.querySelectorAll(".cellChoice")
+        cellChoice.forEach((one) => {
+        one.textContent = "";
+        })
+
+        cells.forEach((cell) => {
+            crosses.forEach((cross) => {
+                if (cell.contains(cross) && cross.dataset.id === cell.id) {
+                    cell.removeChild(cross);
+                }
+            })
+            circles.forEach((circle) => {
+                if (cell.contains(circle) && circle.dataset.id === cell.id) {
+                    cell.removeChild(circle);
+                }
+            })
+        })
+
+        printChoice.textContent = "";
+        printTurn.textContent = "";
+
+        dialog.close();
+        game = DisplayController(playerOne.value, playerTwo.value);
+        printTurn.textContent = `${game.getActivePlayer().name}'s turn.`;
+        endGame = false;
+    })
+
+    const makeItWork = () => {
+        cells.forEach((cell) => {
+            const cellChoice = document.querySelectorAll(".cellChoice");
+
+            cell.addEventListener("click", () => {
+                cross = document.createElement("img");
+                cross.src = "./images/cross.png";
+                cross.dataset.id = cell.id;
+                crosses.push(cross);
+                circle = document.createElement("img");
+                circle.src = "./images/circle.png";
+                circle.dataset.id = cell.id;
+                circles.push(circle);
+                const cellArray = cell.id.split(",");
+                const cellRow = cellArray[0];
+                const cellColumn = cellArray[1];
+                let chosenCell;
+                cellChoice.forEach((one) => {
+                    if (one.dataset.id === cell.id) {
+                        chosenCell = one;
+                    }
+                })
+
+                if (game.checkWin(cellRow,cellColumn) === true || game.checkWin(cellRow,cellColumn) === "tie" || endGame === true){
+                    return;
+                } else if (chosenCell.textContent === "") {
+                    printChoice.textContent = "";
+                    chosenCell.textContent = game.getActivePlayer().token;
+                    if (chosenCell.textContent === "1") {
+                        cell.appendChild(cross);
+                    } else if (chosenCell.textContent === "2") {
+                        cell.appendChild(circle);
+                    }
+                    game.playRound(cellRow,cellColumn);
+                    if (game.checkWin(cellRow,cellColumn) === true) {
+                        printChoice.textContent = `${game.getActivePlayer().name} has won the game.`;
+                        endGame = true;
+                        return;
+                    } else if (game.checkWin(cellRow,cellColumn) === "tie"){
+                        printChoice.textContent = "It´s a tie.";
+                        endGame = true;
+                        return;
+                    } 
+                } else {
+                    printChoice.textContent = "This cell is not available."
+                }
+                printTurn.textContent = `${game.getActivePlayer().name}'s turn.`;
+            })
+        })
+    }
 }
 
-
+ScreenControler();
 
 

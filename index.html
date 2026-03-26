@@ -11,6 +11,16 @@
     <div class="container">
         <h1 class="Header">Tic-Tac-Toe</h1>
         <div class="game">
+            <dialog closedby="any">
+                <form method="post">
+                    <label for="player_one">Player One:</label>
+                    <input type="text" id="player_one" name="player_one">
+                    <label for="player_two">Player Two:</label>
+                    <input type="text" id="player_two" name="player_two">
+                    <button class="submit">Submit</button>
+                </form>
+            </dialog>
+            <button class="newGame">New Game</button>
             <div class="turns"></div>
             <div class="board">
                 <div class="cell" id="0,0"></div>

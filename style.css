@@ -9,6 +9,10 @@ body {
     align-items: center;
 }
 
+.header {
+    font-size: 42px;
+}
+
 .board {
     display: grid;
     grid-template: 1fr 1fr 1fr / 1fr 1fr 1fr;
@@ -17,13 +21,27 @@ body {
 }
 
 .turns {
-    height: 50px;
+    height: 100px;
+    font-size: 2rem;
 }
 
 .cell {
-    width: 50px;
-    height: 50px;
+    width: 12vw;
+    min-width: 50px;
+    aspect-ratio: 1;
     background-color: white;
+}
+
+.cell:hover .cellChoice,
+.cell:hover {
+    background-color: rgb(199, 199, 199);
+    color:rgb(199, 199, 199);
+    
+}
+
+.cellChoice {
+    color:white;
+    position: relative;
 }
 
 p {
@@ -36,6 +54,13 @@ button {
     background-color:  grey;
     color: white;
     font-weight: bold;
+    font-size: 24px;
+}
+
+button:hover {
+    cursor: pointer;
+    background-color: rgb(0, 133, 38);
+
 }
 
 dialog {
@@ -55,17 +80,16 @@ form {
 }
 
 img {
-    height: 50px;
-    width: 50px;
+    height: 12vw;
+    aspect-ratio: 1;
     position: absolute;
     bottom: 0px;
 }
 
-.cellChoice {
-    color:white;
+.cell {
     position: relative;
 }
 
-.cell {
-    position: relative;
+.choices {
+    font-size: 2rem;
 }
